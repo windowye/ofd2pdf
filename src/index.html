@@ -1,17 +1,188 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="styles.css">
-  <title>Vanilla JavaScript App</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<meta name="description" content="提供简单易用的 OFD 转 PDF 或者 PDF 转 OFD 的在线转换工具。">
+<meta name="keywords" content="OFD, PDF, 转换, 在线转换工具, 转换服务, 文件转换, OFD Reader & Writer 开源的OFD处理库, org.ofdrw">
+<title>OFD/PDF 转换服务 - 在线转换工具</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f0f0f0;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.dropzone {
+  border: 2px dashed #ccc;
+  border-radius: 5px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.dropzone:hover {
+  border-color: #007bff;
+}
+
+.dropzone input[type="file"] {
+  display: none;
+}
+
+.dropzone p {
+  margin: 0;
+}
+
+.buttons {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.buttons button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+.buttons a {
+  display: inline-block;
+  padding: 10px;
+  text-decoration: none;
+  color: #007bff;
+}
+
+.buttons a:hover {
+  color: #0056b3;
+}
+
+.friend-link {
+    position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.friend-link a {
+  display: inline-block;
+  padding: 10px;
+  text-decoration: none;
+  color: #007bff;
+}
+
+.friend-link a:hover {
+  color: #0056b3;
+}
+</style>
 </head>
-
 <body>
-  <main>
-    <h1>Vanilla JavaScript App</h1>
-  </main>
-</body>
+<div class="container">
+  <div class="header">
+    <h1>OFD/PDF 转换服务</h1>
+    <p>提供简单易用的 OFD 转 PDF 或者 PDF 转 OFD 的在线服务</p>
+  </div>
 
+  <div class="dropzone" id="dropzone">
+    <p>将文件拖放到此处，或点击以上传文件</p>
+    <input type="file" id="fileInput" accept=".pdf,.ofd" onchange="handleFileSelect(event)">
+  </div>
+
+  <div class="buttons">
+    <button id="convertButton" onclick="convertFile()">转换</button>
+    <a href="https://github.com/ofdrw/ofdrw" target="_blank" class="button icon"><i class="fab fa-github"></i> 查看 ofdrw 库</a>
+  </div>
+
+  <div class="friend-link">
+    <p>友情链接： <a href="https://w-coss.space" target="_blank">欧鹏空间</a></p>
+  </div>
+</div>
+
+<script>
+function handleFileSelect(event) {
+  const file = event.target.files[0];
+  if (file.size > 20 * 1024 * 1024) {
+        alert('文件大小不能超过20MB');
+        return;
+    }
+}
+
+function convertFile() {
+  console.log('执行文件转换操作');
+  // 获取文件
+  const file = document.getElementById('fileInput').files[0];
+    if (!file) {
+        alert('请先选择文件');
+        return;
+    }
+    const filename = file.name;
+  // 发送请求到后端转换文件
+  const formData = new FormData();
+  // 转换后会返回任务ID，之后定时查询任务状态
+    formData.append('file', file, filename);
+    fetch('/convert', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log(data);
+        if (data.code === 0) {
+            alert('转换成功');
+        } else {
+            alert('转换失败');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+const dropzone = document.getElementById('dropzone');
+
+dropzone.addEventListener('dragover', function(event) {
+  event.preventDefault();
+  dropzone.classList.add('dragover');
+});
+
+dropzone.addEventListener('dragleave', function(event) {
+  dropzone.classList.remove('dragover');
+});
+
+dropzone.addEventListener('drop', function(event) {
+  event.preventDefault();
+  dropzone.classList.remove('dragover');
+  const file = event.dataTransfer.files[0];
+  // 如果文件超过20MB，提示用户
+    if (file.size > 20 * 1024 * 1024) {
+        alert('文件大小不能超过20MB');
+        return;
+    }
+});
+
+dropzone.addEventListener('click', function() {
+  document.getElementById('fileInput').click();
+});
+
+document.getElementById('fileInput').addEventListener('change', handleFileSelect);
+</script>
+</body>
 </html>
